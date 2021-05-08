@@ -1,0 +1,50 @@
+build:
+  binary: rtop
+  main: cmd/rtop
+  goos:
+    - windows
+    - darwin
+    - linux
+  goarch:
+    - 386
+    - amd64
+    - arm
+    - arm64
+  goarm:
+    - 6
+  ignore:
+    - goos: darwin
+      goarch: 386
+  env:
+    - CGO_ENABLED=0
+  ldflags:
+    - -s -w # Don't set main.version.
+
+gomod:
+  proxy: true
+
+archives:
+  - name_template: "{{.Binary}}_{{.Os}}_{{.Arch}}"
+    format_overrides:
+      - goos: windows
+        format: zip
+
+release:
+  draft: true
+
+snapshot:
+  name_template: "{{.Tag}}"
+
+checksum:
+  name_template: "task_checksums.txt"
+
+#nfpms:
+#  - vendor: rtop
+#    homepage: https://github.com/immanoj16/rtop
+#    maintainer: Manoj Kumar Maharana <mmaharana14@gmail.com>
+#    description: Simple details of remote vm
+#    license: MIT
+#    formats:
+#      - deb
+#      - rpm
+#    file_name_template: "{{.ProjectName}}_{{.Os}}_{{.Arch}}"
