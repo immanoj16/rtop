@@ -2,14 +2,19 @@ package main
 
 import (
 	"fmt"
-	"github.com/spf13/pflag"
 	"log"
 	"os"
+	"os/user"
 	"runtime/debug"
+	"strconv"
+	"strings"
+
+	"github.com/spf13/pflag"
 )
 
 var (
 	version = ""
+	currentUser *user.User
 )
 
 const usage = `Usage: rtop [-i <private-key-path>] [--version] [--help]
@@ -26,8 +31,8 @@ func main() {
 	}
 
 	var (
-		versionFlag bool
-		helpFlag bool
+		versionFlag    bool
+		helpFlag       bool
 		privateKeyPath string
 	)
 
@@ -45,6 +50,59 @@ func main() {
 		pflag.Usage()
 		return
 	}
+
+	var err error
+	currentUser, err = user.Current()
+	if err != nil {
+		log.Print(err)
+		return
+	}
+
+	username, addr := parseUserAndHost(pflag.Args())
+	host, port := parseHostAndPort(addr)
+
+	fmt.Println(username, "\t", host, "\t", port)
+}
+
+func parseUserAndHost(args []string) (username string, host string) {
+	if len(args) == 1 {
+		argHost := args[0]
+		if i := strings.Index(argHost, "@"); i != 1 {
+			username = argHost[:i]
+			if i+1 >= len(argHost) {
+				pflag.Usage()
+			}
+			host = argHost[i+1:]
+		}
+	} else {
+		pflag.Usage()
+	}
+	if len(username) == 0 {
+		username = currentUser.Username
+	}
+	return
+}
+
+func parseHostAndPort(addr string) (host string, port int) {
+	if p := strings.Split(addr, ":"); len(p) == 2 {
+		host = p[0]
+		var err error
+		if port, err = strconv.Atoi(p[1]); err != nil {
+			log.Printf("bad port: %v", err)
+			pflag.Usage()
+		}
+		if port <= 0 || port >= 65536 {
+			log.Printf("bad port: %v", err)
+			pflag.Usage()
+		}
+	} else {
+		host = addr
+	}
+
+	if port == 0 {
+		port = 22
+	}
+	return
 }
 
 func getVersion() string {
