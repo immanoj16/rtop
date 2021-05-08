@@ -67,12 +67,14 @@ func main() {
 func parseUserAndHost(args []string) (username string, host string) {
 	if len(args) == 1 {
 		argHost := args[0]
-		if i := strings.Index(argHost, "@"); i != 1 {
+		if i := strings.Index(argHost, "@"); i != -1 {
 			username = argHost[:i]
 			if i+1 >= len(argHost) {
 				pflag.Usage()
 			}
 			host = argHost[i+1:]
+		} else {
+			host = argHost
 		}
 	} else {
 		pflag.Usage()
