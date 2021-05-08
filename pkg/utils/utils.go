@@ -2,6 +2,7 @@ package utils
 
 import (
 	"log"
+	"os"
 	"os/user"
 	"strconv"
 	"strings"
@@ -45,10 +46,12 @@ func ParseHostAndPort(addr string) (host string, port int) {
 		if port, err = strconv.Atoi(p[1]); err != nil {
 			log.Printf("bad port: %v", err)
 			pflag.Usage()
+			os.Exit(1)
 		}
 		if port <= minPortRange || port >= maxPortRange {
-			log.Printf("bad port: %v", err)
+			log.Printf("bad port: %v", port)
 			pflag.Usage()
+			os.Exit(1)
 		}
 	} else {
 		host = addr
